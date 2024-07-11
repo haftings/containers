@@ -1,0 +1,88 @@
+#! /bin/bash
+
+set -e
+
+if [[  "$EUID" != 0 ]]; then
+    echo 'Must be run as root.' >&2
+    exit 1
+fi
+
+# OS dependencies
+PKGS=(
+    git build-essential cmake libboost-all-dev  # VieSched++
+    qt5-default libqt5charts5 libqt5charts5-dev libqt5network5  # VieSched++ GUI
+    python3-venv  # VieSched++ AUTO
+)
+apt update -y
+DEBIAN_FRONTEND=noninteractive apt install -qy "${PKGS[@]}"
+
+# setup
+nproc="$(nproc)"
+mkdir /opt/VieSchedpp
+mkdir /opt/VieSchedpp/bin
+cd /opt/VieSchedpp
+echo 'PATH="/opt/VieSchedpp/bin:$PATH"' > /etc/profile.d/vieschedpp.sh
+
+# SOFA
+git clone https://github.com/Starlink/sofa.git --single-branch --branch=vendor IAU_SOFA
+cd IAU_SOFA
+mkdir Release
+cd src/
+make -j "$nproc"
+mv libsofa_c.a ../Release/
+make clean
+cd ../..
+
+# SGP4 (satellite scheduling)
+git clone https://github.com/dnwrnr/sgp4.git
+cd sgp4
+git checkout f5cb54b38
+mkdir Release
+cd Release
+cmake -j "$nproc" -DCMAKE_BUILD_TYPE=Release ..
+make -j "$nproc"
+cd ../..
+
+# VieSched++
+git clone https://github.com/TUW-VieVS/VieSchedpp.git
+cd VieSchedpp
+mkdir Release
+cd Release
+cmake -j "$nproc" -DCMAKE_BUILD_TYPE=Release ..
+make -j "$nproc"
+cd ../..
+for alt in 'VieSched++' VieSchedpp VieSched 'viesched++' vieschedpp viesched; do
+    ln -s ../VieSchedpp/Release/VieSchedpp "bin/$alt"
+done
+
+# VieSched++ GUI
+
+git clone https://github.com/TUW-VieVS/VieSchedppGUI.git
+cd VieSchedppGUI
+qmake VieSchedppGUI.pro
+make -j "$nproc"
+make clean
+cd ..
+for alt in \
+    'VieSched++GUI' VieSchedppGUI VieSchedGUI VieSched-GUI \
+    'viesched++gui' vieschedppgui vieschedgui viesched-gui
+do
+    ln -s ../VieSchedppGUI/VieSchedppGUI "bin/$alt"
+done
+
+# VieSched++ AUTO
+git clone --recurse-submodules https://github.com/TUW-VieVS/VieSchedpp_AUTO.git
+cd VieSchedpp_AUTO
+# create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -q wheel
+pip install -q -r requirements.txt
+cd ../bin
+printf '#! /bin/bash\n\n. /opt/VieSchedpp/VieSchedpp_AUTO/venv/bin/activate\npython3 /opt/VieSchedpp/VieSchedpp_AUTO/VieSchedpp_AUTO.py "$@"' > VieSchedpp_AUTO
+for alt in \
+    VieSchedpp-AUTO VieSchedppAUTO VieSched-AUTO VieSchedAUTO VieSched_AUTO \
+    vieschedpp-auto vieschedppauto viesched-auto vieschedauto viesched_auto vieschedpp_auto
+do
+    ln -s VieSchedpp_AUTO "$alt"
+done
