@@ -1,0 +1,12 @@
+# This sshd_config file allows anyone to ssh into root without a password.
+# It should only be used inside a container (e.g. docker or podman),
+# and an sshd using it should never be exposed beyond localhost.
+
+Include /etc/ssh/sshd_config.d/*.conf
+AcceptEnv *
+AuthenticationMethods none
+PermitEmptyPasswords yes
+PermitRootLogin yes
+PrintMotd no
+X11Forwarding yes
+Subsystem sftp /usr/lib/openssh/sftp-server

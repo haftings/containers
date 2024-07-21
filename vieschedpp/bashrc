@@ -1,0 +1,37 @@
+# all shells
+export LIBGL_ALWAYS_INDIRECT=1
+export XDG_RUNTIME_DIR=/tmp/runtime-root
+# interactive only
+[[ -z "$PS1" ]] && return
+# general aliases
+i=' --group-directories-first' && ls . -d $i >&/dev/null || i=''
+i+=' --color=auto --time-style=+%Y-%m-%d\ %H:%M:%S'
+i+=' --quoting-style=shell'
+alias ls='ls --color=auto'
+alias l="ls -FAh$i"
+alias ll="ls -FAhl$i"
+alias root='sudo su -'
+for i in dir vdir grep egrep fgrep; do alias "$i=$i --color=auto"; done
+unset -v i
+function _ {
+    local c=$?
+    (( c )) && printf '%s (false)\n' $c || printf '%s (true)\n' $c
+    return $c
+}
+PS1='\u@\h:\w\$ '
+# color TTY only
+if [[ -z $color ]]; then
+    [[ -n "$force_color_terminal" || ${TERM: -5} = color ]] || { [[ -x /usr/bin/tput ]] && /usr/bin/tput setaf 1 >&/dev/null; } || return
+fi
+PS1='\u@\[\e[1m\]\h\[\e[0m\]:\[\e[2m\]\w\[\e[0m\]\$ '
+export LS_COLORS='no=00:di=34:fi=00:ln=36:pi=33:so=01:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=31:ex=32:su=47:sg=47:tw=47:ow=47:st=47'
+[[ -x /usr/bin/dircolors && -r ~/.dircolors ]] && eval "$(dircolors -b ~/.dircolors)"
+export GREP_COLOR='48;5;220'
+export GREP_COLORS='sl=:cx=:mt=48;5;220:fn=48;5;254:ln=38;5;252:se=38;5;254'
+export LESS_TERMCAP_mb=$'\E[01;31m'
+export LESS_TERMCAP_md=$'\E[01;38;5;18m'
+export LESS_TERMCAP_me=$'\E[0m'
+export LESS_TERMCAP_se=$'\E[0m'
+export LESS_TERMCAP_so=$'\E[48;5;220m'
+export LESS_TERMCAP_ue=$'\E[0m'
+export LESS_TERMCAP_us=$'\E[04;38;5;23m'

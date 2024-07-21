@@ -1,0 +1,68 @@
+#! /usr/bin/env python
+
+'''Run the VieSched++ container with X11 support
+
+Typical usage: %(prog)s --host somehost
+
+Usage Notes:
+  - Any additional arguments will be sent to the container engine
+  - SSH is always used in order to tunnel X11
+  - Outer SSH connection authenticates user and host(s)
+  - Inner SSH connection is unauthenticated and does not use networking
+
+Requirements:
+  - This host must have Python 3.X or 2.7
+  - Remote host must have docker or podman installed
+  - Remote host must have a VieSched++ container loaded
+'''
+
+# TODO --finals, -f  remote EOP finals path (may need to search directory)
+# TODO --root, --out, --catalogs, --master or similar for setting dirs
+
+import argparse
+import subprocess
+import sys
+
+try:
+    from shlex import quote
+except ImportError:
+    from pipes import quote
+
+p = argparse.ArgumentParser(
+    description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+)
+p.add_argument(
+    '--image', '-i', default='vieschedpp',
+    help='run this container name (default %(default)s)'
+)
+p.add_argument(
+    '--host', '-n', default='localhost',
+    help='SSH to this host and run container on it (default %(default)s)'
+)
+p.add_argument(
+    '--engine', '-e', default='docker,podman',
+    help='list of container engine(s) to try to use (default %(default)s)'
+)
+a, extra_args = p.parse_known_args()
+
+# set up proxy command
+engine = a.engine.replace(',', ' ').split() or ['docker', 'podman']
+if len(engine) == 1:
+    engine = quote(engine[0])
+else:
+    engine = ('$(' + ''.join(
+        f'(type {quote(app)}>/dev/null 2>&1&&echo {quote(app)})||'
+        for app in engine[:-1]
+    ) + f'echo {quote(engine[-1])})')
+extra_args = ''.join(' ' + quote(arg) for arg in extra_args)
+proxy_command = (
+    f'ssh {quote(a.host)} '
+    f'{engine} run --rm -i{extra_args} {quote(a.image)} \'/usr/sbin/sshd -i\''
+)
+cmd = [
+    'ssh', '-Fnone', '-oUser root', f'-oProxyCommand {proxy_command}',
+    '-oStrictHostKeyChecking no', '-oUserKnownHostsFile /dev/null',
+    '-oForwardX11 yes', '-oForwardX11Trusted yes', '-oLogLevel error', '_'
+]
+sys.stdout.write(' '.join(map(quote, cmd)) + '\n')
+exit(subprocess.Popen(cmd).wait())
