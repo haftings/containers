@@ -63,6 +63,6 @@ if os.path.isdir(a.directory):
 if a.output in '-':
     sys.stdout.write(full_text)
 else:
-    with open(a.output) as f:
+    with open(a.output, 'w') as f:
         f.write(full_text)
     sys.stdout.write('wrote ' + a.output + '\n')
