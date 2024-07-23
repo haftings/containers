@@ -49,6 +49,13 @@ Since the container starts "fresh" every time, you may want to link in your loca
 ./run-vieschedpp-container --host somehost -v catalogs/:/root/AUTO_DOWNLOAD_CATALOGS/ -v master/:/root/AUTO_DOWNLOAD_MASTER/ -v out/:/out
 ```
 
+If you're compiling in an environment that needs custom proxy, DNS, NTP, repo, certificate, or other settings, then use the [`customizations` directory](customizations/readme.md) and the `customize-container` script:
+
+```bash
+customize-container
+podman build . -t vieschedpp -f custom.dockerfile
+```
+
 ## Compatibility Notes
 
 - X11 is required on the client, but X11 is ***not*** required on the host running container

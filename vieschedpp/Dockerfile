@@ -1,6 +1,8 @@
 # base stage
 FROM ubuntu:20.04 as base
 
+# {pre-base}
+
 ## install dependencies
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -qy git libgomp1 qt5-default libqt5charts5 libqt5network5 python3-venv ssh x11-apps && \
@@ -16,8 +18,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     done
 # Note: in the above we compress /usr/share/doc while keeping legally required copyrights
 
+# {post-base}
+
 # build stage
 FROM base as build
+
+# {pre-build}
 
 ## install additional build dependencies
 RUN apt-get update && \
@@ -63,13 +69,17 @@ RUN cd /opt/VieSchedpp_AUTO && \
     printf '#! /bin/bash\n\n. /opt/VieSchedpp/VieSchedpp_AUTO/venv/bin/activate\npython3 /opt/VieSchedpp/VieSchedpp_AUTO/VieSchedpp_AUTO.py "$@"\n' > /opt/VieSchedpp_AUTO/VieSchedpp_AUTO && \
     chmod 755 /opt/VieSchedpp_AUTO/VieSchedpp_AUTO
 
-# main stage
+# {post-build}
+
+# install stage
 
 ## install runtime dependencies
 FROM base
 
 ## bring in /opt
 COPY --from=build /opt /opt
+
+# {pre-install}
 
 ## enable SSH directly to root@container without password and with X11 (Future versions might support using oper:vlbi (801:630) instead)
 ## then link VieSched++ around
@@ -107,3 +117,5 @@ RUN mkdir /var/run/sshd && touch /root/.Xauthority && chmod 600 /root/.Xauthorit
 
 ## open bash by default
 CMD ["bash", "-l"]
+
+# {post-install}
