@@ -55,12 +55,11 @@ else:
         for app in engine[:-1]
     ) + f'echo {quote(engine[-1])})')
 extra_args = ''.join(' ' + quote(arg) for arg in extra_args)
-proxy_command = (
-    f'ssh {quote(a.host)} '
-    f'{engine} run --rm -i{extra_args} {quote(a.image)} \'/usr/sbin/sshd -i\''
-)
+cmd = f'{engine} run --cap-add AUDIT_WRITE --rm -i{extra_args} {quote(a.image)}'
+cmd += ' /usr/sbin/sshd -i'
+cmd = f'ssh {quote(a.host)} {quote(cmd)}'
 cmd = [
-    'ssh', '-Fnone', '-oUser root', f'-oProxyCommand {proxy_command}',
+    'ssh', '-Fnone', '-oUser root', f'-oProxyCommand {cmd}',
     '-oStrictHostKeyChecking no', '-oUserKnownHostsFile /dev/null',
     '-oForwardX11 yes', '-oForwardX11Trusted yes', '-oLogLevel error', '_'
 ]
