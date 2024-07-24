@@ -1,6 +1,3 @@
-# all shells
-export LIBGL_ALWAYS_INDIRECT=1
-export XDG_RUNTIME_DIR=/tmp/runtime-root
 # interactive only
 [[ -z "$PS1" ]] && return
 # general aliases
