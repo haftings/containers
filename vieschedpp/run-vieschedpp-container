@@ -56,8 +56,12 @@ p.add_argument(
     help='path to finals file, e.g. if not in catalogs (default \'\' for n/a)'
 )
 p.add_argument(
-    '--mode', '-p', default='ro',
-    help='mode for --master, --catalogs, and --finals; options are ro (read only), rw (read and write), and z (read and write with SELinux permissions); (default is ro)'
+    '--mode', '-p', default='Z,ro', help=(
+        'mount mode for --master, --catalogs, and --finals; options are '
+        'ro (read only), rw (read and write), z (naive SELinux permissions), '
+        'and Z (container-aware SELinux permissions); z or Z can be combined '
+        'with ro or rw with a comma; (default is Z,ro)'
+    )
 )
 a, extra_args = p.parse_known_args()
 
