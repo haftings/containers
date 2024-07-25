@@ -114,7 +114,8 @@ RUN mkdir /var/run/sshd && touch /root/.Xauthority && chmod 600 /root/.Xauthorit
     ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/viesched++auto && \
     ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/viesched-auto && \
     ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/vieschedauto && \
-    sed -i '1s@^@export LIBGL_ALWAYS_INDIRECT=1\nexport XDG_RUNTIME_DIR=\/tmp\/runtime-root\n@' /etc/bash.bashrc
+    sed -i '1s@^@export LIBGL_ALWAYS_INDIRECT=1\nexport XDG_RUNTIME_DIR=\/tmp\/runtime-root\n@' /etc/bash.bashrc && \
+    mkdir -m 0700 /tmp/runtime-root
 
 ## open bash by default
 CMD ["bash", "-l"]
