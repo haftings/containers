@@ -85,7 +85,6 @@ COPY --from=build /opt /opt
 ## then link VieSched++ around
 COPY sshd_config /etc/ssh/sshd_config
 COPY bashrc /etc/profile.d/zzz_vieschedpp.sh
-ENV LIBGL_ALWAYS_INDIRECT=1 XDG_RUNTIME_DIR=/tmp/runtime-root
 RUN mkdir /var/run/sshd && touch /root/.Xauthority && chmod 600 /root/.Xauthority && \
     echo 'root:$6$mBadEA6b9fKFCFjt$xCyMoyFUZTq/2kK7.8BMXTwwJ.fW65UyESsX5DugLYYfpF8qi34g3ix8SvbvmWwxUtHKwaOFLD6hJALLWND3u/' | chpasswd -e && \
     ln -s /opt/VieSchedpp/Release/VieSchedpp /root/VieSchedpp && \
@@ -114,7 +113,8 @@ RUN mkdir /var/run/sshd && touch /root/.Xauthority && chmod 600 /root/.Xauthorit
     ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/vieschedppauto && \
     ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/viesched++auto && \
     ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/viesched-auto && \
-    ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/vieschedauto
+    ln -s /opt/VieSchedpp_AUTO/VieSchedpp_AUTO /usr/local/bin/vieschedauto && \
+    sed -i '1s@^@export LIBGL_ALWAYS_INDIRECT=1\nexport XDG_RUNTIME_DIR=\/tmp\/runtime-root\n@' /etc/bash.bashrc
 
 ## open bash by default
 CMD ["bash", "-l"]
