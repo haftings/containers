@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 '''Run the VieSched++ container with X11 support
 
@@ -11,7 +11,7 @@ Usage Notes:
   - Inner SSH connection is unauthenticated and does not use networking
 
 Requirements:
-  - This host must have Python 3.X or 2.7
+  - This host must have Python 3.8+
   - Remote host must have docker or podman installed
   - Remote host must have a VieSched++ container loaded
 '''
