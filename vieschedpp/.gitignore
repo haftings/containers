@@ -1,0 +1,4 @@
+catalogs/*
+!catalogs/readme.md
+master/*
+!master/readme.md
