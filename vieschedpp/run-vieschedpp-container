@@ -16,10 +16,8 @@ Requirements:
   - Remote host must have a VieSched++ container loaded
 '''
 
-# TODO --finals, -f  remote EOP finals path (may need to search directory)
-# TODO --root, --out, --catalogs, --master or similar for setting dirs
-
 import argparse
+import os
 import subprocess
 import sys
 
@@ -44,16 +42,26 @@ p.add_argument(
     help='list of container engine(s) to try to use (default %(default)s)'
 )
 p.add_argument(
-    '--master', '-m', default='master',
+    '--root', '-r', default='', help=(
+        'root directory for --master, --catalogs, and --finals '
+        'which is used if they don\'t start with ., .., or / (default \'\')'
+    )
+)
+p.add_argument(
+    '--master', '-m', default='master/',
     help='path to master files dir on container host (default %(default)s)'
 )
 p.add_argument(
-    '--catalogs', '-c', default='catalogs',
+    '--catalogs', '-c', default='catalogs/',
     help='path to catalog files dir on container host (default %(default)s)'
 )
 p.add_argument(
     '--finals', '-f', default='',
     help='path to finals file, e.g. if not in catalogs (default \'\' for n/a)'
+)
+p.add_argument(
+    '--out', '-o', default='./out',
+    help='path to output directory on container host (default %(default)s)'
 )
 p.add_argument(
     '--mode', '-p', default='Z,ro', help=(
@@ -75,18 +83,19 @@ else:
         for app in engine[:-1]
     ) + f'echo {quote(engine[-1])})')
 extra_args = ''.join(' ' + quote(arg) for arg in extra_args)
-if a.master:
-    x, _, m = a.master.partition(':')
-    x, m = quote(x or '.'), quote(m or a.mode)
-    extra_args += f' $([ -e {x} ] && echo -v {x}:/root/AUTO_DOWNLOAD_MASTER:{m} || echo warning: not found: {x}>&2)'
-if a.catalogs:
-    x, _, m = a.catalogs.partition(':')
-    x, m = quote(x or '.'), quote(m or a.mode)
-    extra_args += f' $([ -e {x} ] && echo -v {x}:/root/AUTO_DOWNLOAD_CATALOGS:{m} || echo warning: not found: {x}>&2)'
-if a.finals:
-    x, _, m = a.finals.partition(':')
-    x, m = quote(x or '.'), quote(m or a.mode)
-    extra_args += f' $([ -e {x} ] && echo -v {x}:/root/AUTO_DOWNLOAD_CATALOGS/9_FINALS.ALL_IAU2000_V2013_019.txt:{m} || echo warning: not found: {x}>&2)'
+for arg_name, default_path in [
+    ('master', 'AUTO_DOWNLOAD_MASTER'),
+    ('catalogs', 'AUTO_DOWNLOAD_CATALOGS'),
+    ('finals', 'AUTO_DOWNLOAD_CATALOGS/9_FINALS.ALL_IAU2000_V2013_019.txt'),
+    ('out', 'out')
+]:
+    if arg_value := getattr(a, arg_name):
+        x, _, m = arg_value.partition(':')
+        if a.root and not f'{x}/'.startswith(('./', '../', '/')):
+            x = os.path.join(a.root, x)
+        x, m = quote(x or '.'), quote(m or a.mode)
+        extra_args += f' $([ -e {x} ] && echo -v {x}:/root/{default_path}:{m}'
+        extra_args += f' || echo warning: not found: {x}>&2)'
 cmd = f'{engine} run --cap-add AUDIT_WRITE --rm -i{extra_args} {quote(a.image)}'
 cmd = cmd + ' /usr/sbin/sshd -i'
 if a.host not in '-':
