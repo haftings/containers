@@ -13,7 +13,7 @@ It should work on any Linux-like system with either `podman` or `docker` install
    ```bash
    git clone https://github.com/haftings/containers.git
    cd containers/vieschedpp
-   podman build . -t vieschedpp
+   podman build src -t vieschedpp
    ```
 
 2. *(optional)* Clean up left-over build layers
@@ -43,17 +43,17 @@ It's very common to run containers on a remote system, just throw a `--host` arg
 ./run-vieschedpp-container --host somehost
 ```
 
-Since the container starts "fresh" every time, you may want to link in your local file system when you run it, for example:
+The default is to mount `master` and `catalogs` directories read-only, but if you want to have the program update them instead of giving an error, you'll want to make them writeable with `-p rw,Z`.
 
 ```bash
-./run-vieschedpp-container --host somehost -v catalogs/:/root/AUTO_DOWNLOAD_CATALOGS/ -v master/:/root/AUTO_DOWNLOAD_MASTER/ -v out/:/out
+./run-vieschedpp-container --host somehost -p rw,Z
 ```
 
 If you're compiling in an environment that needs custom proxy, DNS, NTP, repo, certificate, or other settings, then use the [`customizations` directory](customizations/readme.md) and the `customize-container` script:
 
 ```bash
 customize-container
-podman build . -t vieschedpp -f custom.dockerfile
+podman build src -t vieschedpp -f custom.dockerfile
 ```
 
 ## Compatibility Notes
