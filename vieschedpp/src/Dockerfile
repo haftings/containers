@@ -7,7 +7,7 @@ FROM ubuntu:20.04 as base
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -qy git libgomp1 qt5-default libqt5charts5 libqt5network5 python3-venv ssh x11-apps binutils && \
     DEBIAN_FRONTEND=noninteractive apt-get clean && \
-    strip --remove-section=.note.ABI-tag /usr/lib/aarch64-linux-gnu/libQt5Core.so.5 && \
+    for i in /usr/lib/*-linux-gnu/libQt5Core.so.5; do strip --remove-section=.note.ABI-tag $i; done && \
     find /usr/share/doc \( -type f -o -type l \) \! -iname copyright -delete && \
     find /usr/share/doc -type d -empty -delete && \
     mkdir /usr/share/doc/hash && \
