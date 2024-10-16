@@ -5,8 +5,9 @@ FROM ubuntu:20.04 as base
 
 ## install dependencies
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -qy git libgomp1 qt5-default libqt5charts5 libqt5network5 python3-venv ssh x11-apps && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -qy git libgomp1 qt5-default libqt5charts5 libqt5network5 python3-venv ssh x11-apps binutils && \
     DEBIAN_FRONTEND=noninteractive apt-get clean && \
+    strip --remove-section=.note.ABI-tag /usr/lib/aarch64-linux-gnu/libQt5Core.so.5 && \
     find /usr/share/doc \( -type f -o -type l \) \! -iname copyright -delete && \
     find /usr/share/doc -type d -empty -delete && \
     mkdir /usr/share/doc/hash && \
@@ -45,13 +46,13 @@ RUN mkdir /opt/IAU_SOFA/Release && \
 ## install SGP4
 RUN mkdir /opt/sgp4/Release && \
     cd /opt/sgp4/Release && \
-    cmake -j "$(nproc)" -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
     make -j "$(nproc)"
 
 ## install VieSched++
 RUN mkdir /opt/VieSchedpp/Release && \
     cd /opt/VieSchedpp/Release && \
-    cmake -j "$(nproc)" -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
     make -j "$(nproc)"
 
 ## install VieSched++ GUI

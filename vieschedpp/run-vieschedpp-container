@@ -42,9 +42,9 @@ p.add_argument(
     help='list of container engine(s) to try to use (default %(default)s)'
 )
 p.add_argument(
-    '--root', '-r', default='', help=(
+    '--root', '-r', default='.', help=(
         'root directory for --master, --catalogs, and --finals '
-        'which is used if they don\'t start with ., .., or / (default \'\')'
+        'which is used if they don\'t start with ., .., or / (default \'.\')'
     )
 )
 p.add_argument(
@@ -98,10 +98,11 @@ for arg_name, default_path in [
         extra_args += f' || echo warning: not found: {x}>&2)'
 cmd = f'{engine} run --cap-add AUDIT_WRITE --rm -i{extra_args} {quote(a.image)}'
 cmd = cmd + ' /usr/sbin/sshd -i'
+cmd = f'ulimit -n $(ulimit -Hn) >/dev/null; {cmd}'
 if a.host not in '-':
     cmd = f'ssh {quote(a.host)} {quote(cmd)}'
 cmd = [
-    'ssh', '-Fnone', '-oUser root', f'-oProxyCommand {cmd}',
+    'ssh', '-Fnone', '-oUser root', f'-oProxyCommand bash -c {quote(cmd)}',
     '-oStrictHostKeyChecking no', '-oUserKnownHostsFile /dev/null',
     '-oForwardX11 yes', '-oForwardX11Trusted yes', '-oLogLevel error', '_'
 ]
