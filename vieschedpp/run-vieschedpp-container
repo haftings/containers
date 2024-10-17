@@ -64,11 +64,11 @@ p.add_argument(
     help='path to output directory on container host (default %(default)s)'
 )
 p.add_argument(
-    '--mode', '-p', default='Z,ro', help=(
+    '--mode', '-p', default='Z', help=(
         'mount mode for --master, --catalogs, and --finals; options are '
         'ro (read only), rw (read and write), z (naive SELinux permissions), '
         'and Z (container-aware SELinux permissions); z or Z can be combined '
-        'with ro or rw with a comma; (default is Z,ro)'
+        'with ro or rw with a comma; (default is Z)'
     )
 )
 a, extra_args = p.parse_known_args()
